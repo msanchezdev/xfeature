@@ -1,21 +1,16 @@
 {
-	"name": "@xfeature/core",
-	"version": "1.0.0",
-	"module": "index.ts",
-	"type": "module",
-	"files": ["dist/index.js"],
-	"main": "dist/index.js",
-	"types": "dist/index.d.ts",
-	"scripts": {
-		"build": "tsc",
-		"prepack": "bun run build"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9.4",
-		"@types/bun": "latest",
-		"rimraf": "^6.0.1"
-	},
-	"peerDependencies": {
-		"typescript": "^5"
-	}
+  "name": "xfeature",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/bun": "latest",
+    "lefthook": "^1.11.13"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "module": "index.ts",
+  "type": "module"
 }

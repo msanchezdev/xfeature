@@ -1,0 +1,15 @@
+{
+  "name": "@xfeature/core",
+  "version": "1.0.1",
+  "main": "dist/index.js",
+  "module": "index.ts",
+  "files": ["dist/index.js", "dist/index.d.ts", "dist/index.d.ts.map"],
+  "scripts": {
+    "build": "tsc",
+    "prepack": "bun run build",
+    "lint": "npx @biomejs/biome check --formatter-enabled=false",
+    "lint:fix": "npx @biomejs/biome check --write"
+  },
+  "type": "module",
+  "types": "dist/index.d.ts"
+}
