@@ -1,3 +1,5 @@
+import { inspect } from "node:util";
+
 const symFeatureName = Symbol("feature name");
 const symFeatureLeafName = Symbol("feature leaf name");
 const symFeatureEnabled = Symbol("feature enabled");
@@ -64,7 +66,9 @@ export const registerFeatures = <T extends Record<string, FeatureObject>>(
      * @default "FEATURES"
      */
     parseEnv?: boolean | string;
-  } = {},
+  } = {
+    parseEnv: true,
+  },
 ): T => {
   if (options.override) {
     featureRegistry.clear();
@@ -98,12 +102,34 @@ export const registerFeatures = <T extends Record<string, FeatureObject>>(
 };
 
 export const loadFeaturesFromString = (features: string) => {
-  const featuresToEnable = features
+  const featureNames = features
     .replaceAll(/(\n|\t)+/g, " ")
     .split(",")
     .map((feature) => {
       const featureName = feature.trim();
       if (!featureName) {
+        return;
+      }
+      return featureName;
+    })
+    .filter((featureName): featureName is FeatureName => !!featureName);
+
+  const disablesAllFeatures = featureNames.includes("-*");
+  if (disablesAllFeatures) {
+    loadFeatures(
+      Array.from(
+        featureRegistry
+          .values()
+          // only disable top-level features and let children inherit the parent's state
+          .filter((feature) => !feature.$name().includes("."))
+          .map((feature) => feature.$asDisabled()),
+      ),
+    );
+  }
+
+  const featuresToEnable = featureNames
+    .map((featureName) => {
+      if (featureName === "*" || featureName === "-*") {
         return;
       }
 
@@ -225,17 +251,6 @@ export const loadFeatures = (
       feature[symFeatureEnabled] = true;
     }
   }
-
-  // console.log(
-  // 	"registry =",
-  // 	inspect(
-  // 		[...featureRegistry.entries()].map(([key, value]) => ({
-  // 			name: key,
-  // 			enabled: value.$isEnabled(),
-  // 		})),
-  // 		{ depth: null, colors: true },
-  // 	),
-  // );
 };
 
 /**
@@ -256,13 +271,11 @@ export const isFeatureEnabled = (
 ) => {
   const featureName = feature[symFeatureName];
 
-  // console.log("checking feature", featureName, "explicitly", feature);
   if (feature[symFeatureEnabled] === undefined) {
     const parents = featureName
       .split(".")
       .map((_, index, parts) => parts.slice(0, index + 1).join("."));
 
-    // console.log("feature", featureName, "will check parents", parents);
     while (parents.length > 0) {
       const parentName = parents.pop();
       if (!parentName) {
@@ -274,22 +287,11 @@ export const isFeatureEnabled = (
         continue;
       }
 
-      // console.log("parent", parentName, "is", parent);
       if (parent[symFeatureEnabled] !== undefined) {
-        feature[symFeatureEnabled] = parent[symFeatureEnabled];
-        // console.log(
-        // 	"feature",
-        // 	featureName,
-        // 	"inherited from",
-        // 	parentName,
-        // 	"as",
-        // 	parent[symFeatureEnabled],
-        // );
-        break;
+        // feature[symFeatureEnabled] = parent[symFeatureEnabled];
+        return parent[symFeatureEnabled];
       }
     }
-
-    feature[symFeatureEnabled] ??= true;
   }
 
   // console.log("feature", featureName, "is", feature[symFeatureEnabled]);
@@ -313,3 +315,16 @@ const isFeatureObject = (obj: unknown): obj is InternalFeatureObject => {
 };
 
 export type FeatureRegistry = ReturnType<typeof registerFeatures>;
+
+function printFeatureRegistry() {
+  console.log(
+    "registry =",
+    inspect(
+      [...featureRegistry.entries()].map(([key, value]) => ({
+        name: key,
+        enabled: value.$isEnabled(),
+      })),
+      { depth: null, colors: true },
+    ),
+  );
+}

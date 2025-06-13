@@ -6,10 +6,7 @@
     "module": "Preserve",
     "moduleDetection": "force",
     "jsx": "react-jsx",
-    "declaration": true,
-    "declarationMap": true,
     "allowJs": true,
-    "outDir": "dist",
 
     // Bundler mode
     "moduleResolution": "bundler",

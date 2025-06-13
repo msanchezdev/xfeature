@@ -1,15 +1,25 @@
 {
   "name": "@xfeature/core",
-  "version": "1.0.1",
-  "main": "dist/index.js",
-  "module": "index.ts",
-  "files": ["dist/index.js", "dist/index.d.ts", "dist/index.d.ts.map"],
-  "scripts": {
-    "build": "tsc",
-    "prepack": "bun run build",
-    "lint": "npx @biomejs/biome check --formatter-enabled=false",
-    "lint:fix": "npx @biomejs/biome check --write"
+  "version": "1.0.5-alpha4",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "require": "./dist/cjs/index.js",
+  "types": "./dist/types/index.d.ts",
+  "files": ["dist", "LICENSE"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/msanchezdev/xfeature.git",
+    "directory": "packages/core"
   },
-  "type": "module",
-  "types": "dist/index.d.ts"
+  "scripts": {
+    "build": "bun run build:clean && bun run build:esm && bun run build:cjs",
+    "build:clean": "rm -rf dist",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "prepack": "bun run build",
+    "lint": "biome check --formatter-enabled=false",
+    "lint:fix": "biome check --write",
+    "test": "bun test"
+  }
 }
