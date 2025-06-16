@@ -1,6 +1,6 @@
 {
   "name": "@xfeature/core",
-  "version": "1.0.5-alpha4",
+  "version": "1.0.5-alpha5",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "require": "./dist/cjs/index.js",

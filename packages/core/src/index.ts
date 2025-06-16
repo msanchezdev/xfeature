@@ -103,8 +103,7 @@ export const registerFeatures = <T extends Record<string, FeatureObject>>(
 
 export const loadFeaturesFromString = (features: string) => {
   const featureNames = features
-    .replaceAll(/(\n|\t)+/g, " ")
-    .split(",")
+    .split(/[,\n ]+/)
     .map((feature) => {
       const featureName = feature.trim();
       if (!featureName) {
