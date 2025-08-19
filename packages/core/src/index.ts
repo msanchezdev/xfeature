@@ -102,46 +102,33 @@ export const registerFeatures = <T extends Record<string, FeatureObject>>(
 };
 
 export const loadFeaturesFromString = (features: string) => {
-  const featureNames = features
-    .split(/[,\n ]+/)
-    .map((feature) => {
-      const featureName = feature.trim();
-      if (!featureName) {
-        return;
-      }
-      return featureName;
-    })
-    .filter((featureName): featureName is FeatureName => !!featureName);
+  const featureNames = features.split(/[,\n ]+/);
 
-  const disablesAllFeatures = featureNames.includes("-*");
-  if (disablesAllFeatures) {
-    loadFeatures(
-      Array.from(
-        featureRegistry
-          .values()
-          // only disable top-level features and let children inherit the parent's state
-          .filter((feature) => !feature.$name().includes("."))
-          .map((feature) => feature.$asDisabled()),
-      ),
-    );
+  const rootFeatures = featureRegistry
+    .values()
+    .filter((feature) => !feature.$name().includes("."))
+    .toArray();
+
+  for (const feature of featureNames) {
+    const featureName = feature.trim();
+    if (!featureName) {
+      continue;
+    }
+
+    if (featureName === "-*") {
+      for (const feature of rootFeatures) {
+        // @ts-ignore
+        feature.$disable();
+      }
+      continue;
+    }
+
+    const featureObject = getFeature(featureName);
+    if (featureObject) {
+      // @ts-ignore
+      featureObject.$enable();
+    }
   }
-
-  const featuresToEnable = featureNames
-    .map((featureName) => {
-      if (featureName === "*" || featureName === "-*") {
-        return;
-      }
-
-      const featureObject = getFeature(featureName);
-      if (!featureObject) {
-        throw new Error(
-          `Feature ${featureName} not found. Available features: ${[...featureRegistry.keys()].join(", ")}`,
-        );
-      }
-      return featureObject;
-    })
-    .filter((feature): feature is FeatureObject => feature !== undefined);
-  loadFeatures(featuresToEnable);
 };
 
 export const defineFeature = <T extends Record<string, InternalFeatureObject>>(
@@ -315,7 +302,7 @@ const isFeatureObject = (obj: unknown): obj is InternalFeatureObject => {
 
 export type FeatureRegistry = ReturnType<typeof registerFeatures>;
 
-function printFeatureRegistry() {
+export function printFeatureRegistry() {
   console.log(
     "registry =",
     inspect(
